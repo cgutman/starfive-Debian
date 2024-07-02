@@ -12,11 +12,9 @@ Signed-off-by: sw.multimedia <se.multimedia@starfivetech.com>
  libavformat/utils.c    |  7 +++++++
  5 files changed, 80 insertions(+), 1 deletion(-)
 
-diff --git a/configure b/configure
-index e3976df..80be074 100755
 --- a/configure
 +++ b/configure
-@@ -3093,6 +3093,8 @@ h264_vaapi_encoder_select="cbs_h264 vaapi_encode"
+@@ -3185,6 +3185,8 @@
  h264_v4l2m2m_decoder_deps="v4l2_m2m h264_v4l2_m2m"
  h264_v4l2m2m_decoder_select="h264_mp4toannexb_bsf"
  h264_v4l2m2m_encoder_deps="v4l2_m2m h264_v4l2_m2m"
@@ -25,32 +23,30 @@ index e3976df..80be074 100755
  hevc_amf_encoder_deps="amf"
  hevc_cuvid_decoder_deps="cuvid"
  hevc_cuvid_decoder_select="hevc_mp4toannexb_bsf"
-diff --git a/libavcodec/allcodecs.c b/libavcodec/allcodecs.c
-index e42fa30..0c7a18d 100644
 --- a/libavcodec/allcodecs.c
 +++ b/libavcodec/allcodecs.c
-@@ -793,6 +793,8 @@ extern AVCodec ff_h264_mf_encoder;
- extern AVCodec ff_h264_nvenc_encoder;
- extern AVCodec ff_h264_omx_encoder;
- extern AVCodec ff_h264_omx_decoder;
-+extern AVCodec ff_hevc_omx_encoder;
-+extern AVCodec ff_hevc_omx_decoder;
- extern AVCodec ff_h264_qsv_encoder;
- extern AVCodec ff_h264_v4l2m2m_encoder;
- extern AVCodec ff_h264_vaapi_encoder;
-diff --git a/libavcodec/omx.c b/libavcodec/omx.c
-index 0a6a308..86e32a8 100644
+@@ -824,6 +824,8 @@
+ extern const FFCodec ff_h264_nvenc_encoder;
+ extern const FFCodec ff_h264_omx_encoder;
+ extern const FFCodec ff_h264_omx_decoder;
++extern const FFCodec ff_hevc_omx_encoder;
++extern const FFCodec ff_hevc_omx_decoder;
+ extern const FFCodec ff_h264_qsv_encoder;
+ extern const FFCodec ff_h264_v4l2m2m_encoder;
+ extern const FFCodec ff_h264_vaapi_encoder;
 --- a/libavcodec/omx.c
 +++ b/libavcodec/omx.c
-@@ -43,6 +43,7 @@
- #include "avcodec.h"
+@@ -44,7 +44,8 @@
+ #include "codec_internal.h"
  #include "h264.h"
- #include "internal.h"
+ #include "pthread_internal.h"
+-
 +#include "profiles.h"
- 
++ 
  #ifdef OMX_SKIP64BIT
  static OMX_TICKS to_omx_ticks(int64_t value)
-@@ -501,6 +502,8 @@ static av_cold int omx_component_init(AVCodecContext *avctx, const char *role)
+ {
+@@ -508,6 +509,8 @@
          out_port_params.format.video.eCompressionFormat = OMX_VIDEO_CodingMPEG4;
      else if (avctx->codec->id == AV_CODEC_ID_H264)
          out_port_params.format.video.eCompressionFormat = OMX_VIDEO_CodingAVC;
@@ -59,7 +55,7 @@ index 0a6a308..86e32a8 100644
  
      err = OMX_SetParameter(s->handle, OMX_IndexParamPortDefinition, &out_port_params);
      CHECK(err);
-@@ -666,6 +669,9 @@ static av_cold int omx_encode_init(AVCodecContext *avctx)
+@@ -666,6 +669,9 @@
      case AV_CODEC_ID_H264:
          role = "video_encoder.avc";
          break;
@@ -69,7 +65,7 @@ index 0a6a308..86e32a8 100644
      default:
          return AVERROR(ENOSYS);
      }
-@@ -941,6 +947,13 @@ static const AVOption options[] = {
+@@ -926,6 +932,13 @@
      { NULL }
  };
  
@@ -83,9 +79,9 @@ index 0a6a308..86e32a8 100644
  static const enum AVPixelFormat omx_encoder_pix_fmts[] = {
      AV_PIX_FMT_YUV420P, AV_PIX_FMT_NONE
  };
-@@ -986,3 +999,25 @@ AVCodec ff_h264_omx_encoder = {
+@@ -971,3 +984,25 @@
      .caps_internal    = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
-     .priv_class       = &omx_h264enc_class,
+     .p.priv_class     = &omx_h264enc_class,
  };
 +
 +static const AVClass omx_hevcenc_class = {
@@ -109,8 +105,6 @@ index 0a6a308..86e32a8 100644
 +	.caps_internal 	  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 +	.priv_class 	  = &omx_hevcenc_class,
 +};
-diff --git a/libavcodec/omxdec.c b/libavcodec/omxdec.c
-index 7f76ec3..96a2829 100644
 --- a/libavcodec/omxdec.c
 +++ b/libavcodec/omxdec.c
 @@ -44,6 +44,7 @@
@@ -121,7 +115,7 @@ index 7f76ec3..96a2829 100644
  
  #ifdef OMX_SKIP64BIT
  static OMX_TICKS to_omx_ticks(int64_t value)
-@@ -494,6 +495,8 @@ static av_cold int omx_component_init(AVCodecContext *avctx, const char *role)
+@@ -494,6 +495,8 @@
          out_port_params.format.video.eCompressionFormat = OMX_VIDEO_CodingMPEG4;
      else if (avctx->codec->id == AV_CODEC_ID_H264)
          out_port_params.format.video.eCompressionFormat = OMX_VIDEO_CodingAVC;
@@ -130,7 +124,7 @@ index 7f76ec3..96a2829 100644
  
      err = OMX_SetParameter(s->handle, OMX_IndexParamPortDefinition, &out_port_params);
      CHECK(err);
-@@ -627,6 +630,9 @@ static av_cold int omx_decode_init(AVCodecContext *avctx)
+@@ -627,6 +630,9 @@
      case AV_CODEC_ID_H264:
          role = "video_decoder.avc";
          break;
@@ -140,7 +134,7 @@ index 7f76ec3..96a2829 100644
      default:
          return AVERROR(ENOSYS);
      }
-@@ -733,7 +739,7 @@ static int omx_decode_frame(AVCodecContext *avctx, void *data,
+@@ -733,7 +739,7 @@
  			buffer->nFilledLen = pkt->size;
  		}
  
@@ -149,7 +143,7 @@ index 7f76ec3..96a2829 100644
  		//buffer->pAppPrivate = pkt;
  		//buffer->pBuffer = pkt->data;
  		//buffer->nFilledLen = pkt->size;
-@@ -851,6 +857,12 @@ static const AVOption options[] = {
+@@ -851,6 +857,12 @@
      { NULL }
  };
  
@@ -162,7 +156,7 @@ index 7f76ec3..96a2829 100644
  
  static const AVClass omx_mpeg4dec_class = {
      .class_name = "mpeg4_omx",
-@@ -891,3 +903,24 @@ AVCodec ff_h264_omx_decoder = {
+@@ -891,3 +903,24 @@
      .caps_internal    = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
      .priv_class       = &omx_h264dec_class,
  };
@@ -187,11 +181,9 @@ index 7f76ec3..96a2829 100644
 +    .caps_internal    = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 +    .priv_class       = &omx_hevcdec_class,
 +};
-diff --git a/libavformat/utils.c b/libavformat/utils.c
-index 75e5350..262ff5f 100644
---- a/libavformat/utils.c
-+++ b/libavformat/utils.c
-@@ -212,6 +212,13 @@ static const AVCodec *find_probe_decoder(AVFormatContext *s, const AVStream *st,
+--- a/libavformat/demux.c
++++ b/libavformat/demux.c
+@@ -77,6 +77,13 @@
          return avcodec_find_decoder_by_name("h264");
  #endif
  
@@ -202,9 +194,6 @@ index 75e5350..262ff5f 100644
 +		return avcodec_find_decoder_by_name("hevc");
 +#endif
 +
-     codec = find_decoder(s, st, codec_id);
+     codec = ff_find_decoder(s, st, codec_id);
      if (!codec)
          return NULL;
--- 
-2.17.1
-

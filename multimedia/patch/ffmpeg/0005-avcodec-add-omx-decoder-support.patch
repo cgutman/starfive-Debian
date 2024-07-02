@@ -12,11 +12,9 @@ Signed-off-by: sw.multimedia <se.multimedia@starfivetech.com>
  4 files changed, 896 insertions(+)
  create mode 100644 libavcodec/omxdec.c
 
-diff --git a/configure b/configure
-index cdf6bb1..e3976df 100755
 --- a/configure
 +++ b/configure
-@@ -3084,6 +3084,7 @@ h264_mmal_decoder_deps="mmal"
+@@ -3176,6 +3176,7 @@
  h264_nvenc_encoder_deps="nvenc"
  h264_nvenc_encoder_select="atsc_a53"
  h264_omx_encoder_deps="omx"
@@ -24,33 +22,16 @@ index cdf6bb1..e3976df 100755
  h264_qsv_decoder_select="h264_mp4toannexb_bsf qsvdec"
  h264_qsv_encoder_select="atsc_a53 qsvenc"
  h264_rkmpp_decoder_deps="rkmpp"
-diff --git a/libavcodec/Makefile b/libavcodec/Makefile
-index 33a280c..372d7de 100644
 --- a/libavcodec/Makefile
 +++ b/libavcodec/Makefile
-@@ -379,6 +379,7 @@ OBJS-$(CONFIG_H264_NVENC_ENCODER)      += nvenc_h264.o
- OBJS-$(CONFIG_NVENC_ENCODER)           += nvenc_h264.o
- OBJS-$(CONFIG_NVENC_H264_ENCODER)      += nvenc_h264.o
+@@ -392,6 +392,7 @@
+ OBJS-$(CONFIG_H264_MMAL_DECODER)       += mmaldec.o
+ OBJS-$(CONFIG_H264_NVENC_ENCODER)      += nvenc_h264.o nvenc.o
  OBJS-$(CONFIG_H264_OMX_ENCODER)        += omx.o
 +OBJS-$(CONFIG_H264_OMX_DECODER)        += omxdec.o
  OBJS-$(CONFIG_H264_QSV_DECODER)        += qsvdec.o
  OBJS-$(CONFIG_H264_QSV_ENCODER)        += qsvenc_h264.o
  OBJS-$(CONFIG_H264_RKMPP_DECODER)      += rkmppdec.o
-diff --git a/libavcodec/allcodecs.c b/libavcodec/allcodecs.c
-index 2e9a358..e42fa30 100644
---- a/libavcodec/allcodecs.c
-+++ b/libavcodec/allcodecs.c
-@@ -792,6 +792,7 @@ extern AVCodec ff_h264_cuvid_decoder;
- extern AVCodec ff_h264_mf_encoder;
- extern AVCodec ff_h264_nvenc_encoder;
- extern AVCodec ff_h264_omx_encoder;
-+extern AVCodec ff_h264_omx_decoder;
- extern AVCodec ff_h264_qsv_encoder;
- extern AVCodec ff_h264_v4l2m2m_encoder;
- extern AVCodec ff_h264_vaapi_encoder;
-diff --git a/libavcodec/omxdec.c b/libavcodec/omxdec.c
-new file mode 100644
-index 0000000..7f76ec3
 --- /dev/null
 +++ b/libavcodec/omxdec.c
 @@ -0,0 +1,893 @@
@@ -947,6 +928,13 @@ index 0000000..7f76ec3
 +    .caps_internal    = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 +    .priv_class       = &omx_h264dec_class,
 +};
--- 
-2.17.1
-
+--- a/libavcodec/allcodecs.c
++++ b/libavcodec/allcodecs.c
+@@ -823,6 +823,7 @@
+ extern const FFCodec ff_h264_mf_encoder;
+ extern const FFCodec ff_h264_nvenc_encoder;
+ extern const FFCodec ff_h264_omx_encoder;
++extern const FFCodec ff_h264_omx_decoder;
+ extern const FFCodec ff_h264_qsv_encoder;
+ extern const FFCodec ff_h264_v4l2m2m_encoder;
+ extern const FFCodec ff_h264_vaapi_encoder;
