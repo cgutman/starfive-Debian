@@ -1,0 +1,6 @@
+extras/analyser/vlc
+extras/analyser/zsh_gen
+debian/libvlc-bin.postinst
+debian/libvlc-bin.postrm
+debian/libvlc-bin.triggers
+debian/shlibs.local

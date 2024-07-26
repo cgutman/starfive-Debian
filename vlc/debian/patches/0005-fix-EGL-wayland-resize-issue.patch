@@ -1,0 +1,56 @@
+Description: Fix EGL/wayland resize issue
+ .
+ vlc (3.0.18-2) unstable; urgency=medium
+ .
+   * debian/patches: Apply upstream patch for flac playback issues
+Author: Som Qin <som.qin@starfivetech.com>
+
+---
+The information above should follow the Patch Tagging Guidelines, please
+checkout https://dep.debian.net/deps/dep3/ to learn about the format. Here
+are templates for supplementary fields that you might want to add:
+
+Origin: (upstream|backport|vendor|other), (<patch-url>|commit:<commit-id>)
+Bug: <upstream-bugtracker-url>
+Bug-Debian: https://bugs.debian.org/<bugnumber>
+Bug-Ubuntu: https://launchpad.net/bugs/<bugnumber>
+Forwarded: (no|not-needed|<patch-forwarded-url>)
+Applied-Upstream: <version>, (<commit-url>|commit:<commid-id>)
+Reviewed-By: <name and email of someone who approved/reviewed the patch>
+Last-Update: 2023-06-19
+
+--- vlc-3.0.18.orig/modules/video_output/opengl/display.c
++++ vlc-3.0.18/modules/video_output/opengl/display.c
+@@ -253,7 +253,7 @@ static int Control (vout_display_t *vd,
+             c.align.vertical = VOUT_DISPLAY_ALIGN_TOP;
+ 
+         vout_display_PlacePicture (&place, src, &c, false);
+-        vlc_gl_Resize (sys->gl, place.width, place.height);
++	vlc_gl_Resize (sys->gl, c.display.width, c.display.height);
+         if (vlc_gl_MakeCurrent (sys->gl) != VLC_SUCCESS)
+             return VLC_EGENERIC;
+         vout_display_opengl_SetWindowAspectRatio(sys->vgl, (float)place.width / place.height);
+--- vlc-3.0.18.orig/modules/video_output/opengl/egl.c
++++ vlc-3.0.18/modules/video_output/opengl/egl.c
+@@ -54,7 +54,6 @@ typedef struct vlc_gl_sys_t
+ #endif
+ #if defined (USE_PLATFORM_WAYLAND)
+     struct wl_egl_window *window;
+-    unsigned width, height;
+ #endif
+     PFNEGLCREATEIMAGEKHRPROC    eglCreateImageKHR;
+     PFNEGLDESTROYIMAGEKHRPROC   eglDestroyImageKHR;
+@@ -83,11 +82,8 @@ static void Resize (vlc_gl_t *gl, unsign
+ {
+     vlc_gl_sys_t *sys = gl->sys;
+ 
+-    wl_egl_window_resize(sys->window, width, height,
+-                         (sys->width - width) / 2,
+-                         (sys->height - height) / 2);
+-    sys->width = width;
+-    sys->height = height;
++    if (sys->window != NULL)
++        wl_egl_window_resize(sys->window, width, height, 0, 0);
+ }
+ #else
+ # define Resize (NULL)

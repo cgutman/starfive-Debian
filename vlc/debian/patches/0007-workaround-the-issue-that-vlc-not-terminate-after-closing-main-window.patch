@@ -1,0 +1,32 @@
+Description: Workaround the issue that vlc not terminate after closing main window.
+ .
+ vlc (3.0.18-2) unstable; urgency=medium
+ .
+   * debian/patches: Apply upstream patch for flac playback issues
+Author: Som Qin <som.qin@starfivetech.com>
+
+---
+The information above should follow the Patch Tagging Guidelines, please
+checkout https://dep.debian.net/deps/dep3/ to learn about the format. Here
+are templates for supplementary fields that you might want to add:
+
+Origin: (upstream|backport|vendor|other), (<patch-url>|commit:<commit-id>)
+Bug: <upstream-bugtracker-url>
+Bug-Debian: https://bugs.debian.org/<bugnumber>
+Bug-Ubuntu: https://launchpad.net/bugs/<bugnumber>
+Forwarded: (no|not-needed|<patch-forwarded-url>)
+Applied-Upstream: <version>, (<commit-url>|commit:<commid-id>)
+Reviewed-By: <name and email of someone who approved/reviewed the patch>
+Last-Update: 2023-09-13
+
+--- vlc-3.0.18.orig/modules/gui/qt/main_interface.cpp
++++ vlc-3.0.18/modules/gui/qt/main_interface.cpp
+@@ -1672,6 +1672,8 @@ void MainInterface::wheelEvent( QWheelEv
+ void MainInterface::closeEvent( QCloseEvent *e )
+ {
+ //  hide();
++    THEMIM->stop();
++    ::usleep(200000);
+     if ( b_minimalView )
+         setMinimalView( false );
+     if( videoWidget )

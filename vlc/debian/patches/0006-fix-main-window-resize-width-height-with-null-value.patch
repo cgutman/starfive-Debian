@@ -1,0 +1,33 @@
+Description: Fix main window resize width/height with null value
+ .
+ vlc (3.0.18-2) unstable; urgency=medium
+ .
+   * debian/patches: Apply upstream patch for flac playback issues
+Author: Som Qin <som.qin@starfivetech.com>
+
+---
+The information above should follow the Patch Tagging Guidelines, please
+checkout https://dep.debian.net/deps/dep3/ to learn about the format. Here
+are templates for supplementary fields that you might want to add:
+
+Origin: (upstream|backport|vendor|other), (<patch-url>|commit:<commit-id>)
+Bug: <upstream-bugtracker-url>
+Bug-Debian: https://bugs.debian.org/<bugnumber>
+Bug-Ubuntu: https://launchpad.net/bugs/<bugnumber>
+Forwarded: (no|not-needed|<patch-forwarded-url>)
+Applied-Upstream: <version>, (<commit-url>|commit:<commid-id>)
+Reviewed-By: <name and email of someone who approved/reviewed the patch>
+Last-Update: 2023-06-19
+
+--- vlc-3.0.18.orig/modules/gui/qt/main_interface.cpp
++++ vlc-3.0.18/modules/gui/qt/main_interface.cpp
+@@ -1354,7 +1354,8 @@ void MainInterface::resizeWindow(int w,
+         return;
+     }
+ #endif
+-    resize(w, h);
++    if( w > 0 && h > 0 )
++        resize(w, h);
+ }
+ 
+ /**

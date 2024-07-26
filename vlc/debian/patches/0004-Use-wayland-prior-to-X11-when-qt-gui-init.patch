@@ -1,0 +1,45 @@
+Description: Use wayland prior to X11 when qt gui init
+ .
+ vlc (3.0.18-2) unstable; urgency=medium
+ .
+   * debian/patches: Apply upstream patch for flac playback issues
+Author: Som Qin <som.qin@starfivetech.com>
+
+---
+The information above should follow the Patch Tagging Guidelines, please
+checkout https://dep.debian.net/deps/dep3/ to learn about the format. Here
+are templates for supplementary fields that you might want to add:
+
+Origin: (upstream|backport|vendor|other), (<patch-url>|commit:<commit-id>)
+Bug: <upstream-bugtracker-url>
+Bug-Debian: https://bugs.debian.org/<bugnumber>
+Bug-Ubuntu: https://launchpad.net/bugs/<bugnumber>
+Forwarded: (no|not-needed|<patch-forwarded-url>)
+Applied-Upstream: <version>, (<commit-url>|commit:<commid-id>)
+Reviewed-By: <name and email of someone who approved/reviewed the patch>
+Last-Update: 2023-06-09
+
+--- vlc-3.0.18.orig/modules/gui/qt/qt.cpp
++++ vlc-3.0.18/modules/gui/qt/qt.cpp
+@@ -409,16 +409,16 @@ static int Open( vlc_object_t *p_this, b
+     intf_thread_t *p_intf = (intf_thread_t *)p_this;
+     void *(*thread)(void *) = Thread;
+ 
+-#ifdef QT5_HAS_X11
+-    if( HasX11( p_this ) )
+-        thread = ThreadXCB;
+-    else
+-#endif
+ #ifdef QT5_HAS_WAYLAND
+     if( HasWayland() )
+         thread = ThreadWayland;
+     else
+ #endif
++#ifdef QT5_HAS_X11
++    if( HasX11( p_this ) )
++        thread = ThreadXCB;
++    else
++#endif
+ #if defined (QT5_HAS_X11) || defined (QT5_HAS_WAYLAND)
+         return VLC_EGENERIC;
+ #endif
